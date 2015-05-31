@@ -26,7 +26,7 @@
     }
     return self;
 }
-
+//Init with
 -(id)initWithPosition:(int)pos
 {
     self=[super initWithNibName:nil bundle:nil];
