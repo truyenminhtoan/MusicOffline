@@ -1,0 +1,512 @@
+//
+//  Utils.m
+//  Tourist.ONE
+//
+//  Created by Thanh on 11/6/13.
+//  Copyright (c) 2013 Thanh. All rights reserved.
+//
+
+#import "Utils.h"
+#import "DateUtils.h"
+#import <QuartzCore/QuartzCore.h>
+
+@implementation Utils
+
+/**
+ @desciption: kiem tra email dung dinh dang
+ @author: sontq
+ @date: 06/12/2013
+ */
++ (BOOL) validEmail: (NSString *) candidate {
+    NSString *emailRegex = @"^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
+    return [emailTest evaluateWithObject:candidate];
+}
+
+/**
+ @desciption: cat khoang trang dau va cuoi string
+ @author: sontq
+ @date: 06/12/2013
+ */
++(NSString*)trimText:(NSString*)string{
+    return [string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+}
+
+/**
+ @desciption: lay kich thuoc chuoi
+ @author: thanhnn
+ @date: 06/12/2013
+ */
++ (CGSize) getGSizeOfString: (NSString*) resultString withFont: (UIFont *) font withWidth: (int) width withNumOfLines: (int) numOfLines {
+    if (resultString == nil || [resultString length] < 1) {
+        return CGSizeZero;
+    }
+	if(numOfLines == 0)
+	{
+		CGSize maximum = CGSizeMake(width, INT32_MAX);
+		CGSize contentSize = [resultString sizeWithFont: font constrainedToSize: maximum lineBreakMode: UILineBreakModeCharacterWrap];
+		return contentSize;
+	}
+	else
+	{
+        //		CGSize size = [@"a" sizeWithFont: font];
+        //		CGSize maximum = CGSizeMake(width, size.height * numOfLines);
+		CGSize maximum = CGSizeMake(width, font.leading * numOfLines);
+		CGSize contentSize = [resultString sizeWithFont: font constrainedToSize: maximum lineBreakMode: UILineBreakModeCharacterWrap];
+		return contentSize;
+	}
+}
+
+
+
++ (NSString*) parseMoneyFloat:(float) floatMoney {
+    NSString* result = @"";
+    NSString* stringMoney = [NSString stringWithFormat:@"%.f", floatMoney];
+    NSArray* array = [stringMoney componentsSeparatedByString:@"."];
+    for (int i = 0; i < [array count]; i++) {
+        NSString* tempString = (NSString*) [array objectAtIndex:i];
+        if (i == 0) {
+            NSString* pasreString = @"";
+            int j = [tempString length];
+            while (j > 3) {
+                pasreString = [NSString stringWithFormat:@",%@%@", [tempString substringWithRange:NSMakeRange(j - 3, 3)], pasreString];
+                j = j - 3;
+            }
+            pasreString = [NSString stringWithFormat:@"%@%@", [tempString substringToIndex:j], pasreString];
+            result = [result stringByAppendingString:pasreString];
+            if ([array count] > 1) {
+                result = [result stringByAppendingString:@"."];
+            }
+        } else {
+            result = [result stringByAppendingString:tempString];
+        }
+    }
+    result = [Utils removeNumberAfterFloat:result];
+    return result;
+}
+
+/**
+ @desciption: parse format money dua ra dang 1,000,000.00 tu 1000000
+ @author: thanhnn
+ @date: 06/12/2013
+ */
++ (NSString*) parseMoneyString:(NSString*) stringMoney {
+    NSString* result = @"";
+    NSArray* array = [stringMoney componentsSeparatedByString:@"."];
+    for (int i = 0; i < [array count]; i++) {
+        NSString* tempString = (NSString*) [array objectAtIndex:i];
+        if (i == 0) {
+            NSString* pasreString = @"";
+            int j = [tempString length];
+            while (j > 3) {
+                pasreString = [NSString stringWithFormat:@",%@%@", [tempString substringWithRange:NSMakeRange(j - 3, 3)], pasreString];
+                j = j - 3;
+            }
+            pasreString = [NSString stringWithFormat:@"%@%@", [tempString substringToIndex:j], pasreString];
+            result = [result stringByAppendingString:pasreString];
+            if ([array count] > 1) {
+                result = [result stringByAppendingString:@"."];
+            }
+        } else {
+            result = [result stringByAppendingString:tempString];
+        }
+    }
+    result = [Utils removeNumberAfterFloat:result];
+    return result;
+}
+
++ (NSString*) parseIntegerToMoneyString:(NSString*) stringMoney{
+    NSString *result = @"";
+    int n=stringMoney.length;
+    for (int i = 0; i < n; i++) {
+        NSString *strChar = [stringMoney substringWithRange:NSMakeRange(n-1-i, 1)];
+        if(i/3>0 && i%3==0){
+            result=[NSString stringWithFormat:@"%@.%@",strChar,result];
+        }
+        else{
+            result=[NSString stringWithFormat:@"%@%@",strChar,result];
+        }
+    }
+    return result;
+
+}
+
+/**
+ @desciption: returnMoneyFromString dua ra dang 1000000 tu 1,000,000
+ @author: thanhnn
+ @date: 06/12/2013
+ */
++ (float) returnMoneyFromString:(NSString*) stringMoney {
+    NSString* result = @"";
+    NSArray* array = [stringMoney componentsSeparatedByString:@"."];
+    for (int i = 0; i < [array count]; i++) {
+        NSString* tempString = (NSString*) [array objectAtIndex:i];
+        if (i == 0) {
+            NSString* pasreString = @"";
+            int j = [tempString length];
+            while (j > 4) {
+                pasreString = [NSString stringWithFormat:@"%@%@", [tempString substringWithRange:NSMakeRange(j - 3, 3)], pasreString];
+                j = j - 4;
+            }
+            pasreString = [NSString stringWithFormat:@"%@%@", [tempString substringToIndex:j], pasreString];
+            result = [result stringByAppendingString:pasreString];
+            if ([array count] > 1) {
+                result = [result stringByAppendingString:@"."];
+            }
+        } else {
+            result = [result stringByAppendingString:tempString];
+        }
+    }
+    return [result floatValue];
+}
+
+
+/**
+ @desciption: check open phone
+ @author: sontq
+ @date: 06/12/2013
+ */
++ (BOOL) canCallPhoneNumber: (NSURL *) phoneUrl {
+    return [[UIApplication sharedApplication] canOpenURL:phoneUrl];
+}
+
+/**
+ @desciption: check support call (iphone)
+ @author: sontq
+ @date: 06/12/2013
+ */
++ (BOOL) canSupportPhone{
+    if([[UIDevice currentDevice].model isEqualToString:@"iPhone"])
+        return YES;
+    return NO;
+}
+
++ (NSString*) removeNumberAfterFloat:(NSString*) stringFloat {
+    NSString* result = stringFloat;
+    NSArray* array = [stringFloat componentsSeparatedByString:@"."];
+    if ([array count] == 2) {
+        NSString* sf = [array objectAtIndex:1];
+        if ([sf intValue] == 0) {
+            result = [array objectAtIndex:0];
+        }
+    }
+    return result;
+}
+
+/**
+ @desciption: replaceWidthHeighImage
+ @author: thanhnn
+ @date: 06/12/2013
+ */
++ (NSString*) replaceWidthHeighImage:(NSString*) htmlString {
+    NSString* result = @"";
+    NSString* cssString = @"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"> <html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"he\" lang=\"he\"><head><style type='text/css'>img { max-width: 300px; max-height: 300px; width: auto; height: auto; }</style><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /></head><body>%@</body></html>";
+    result = [NSString stringWithFormat:cssString, htmlString];
+    return result;
+//    NSError *error = NULL;
+//    NSRegularExpression *htmlRegex = [NSRegularExpression regularExpressionWithPattern:@"(.*<img).*(/>)"
+//                                                                           options:NSRegularExpressionCaseInsensitive
+//                                                                             error:&error];
+//    NSArray* arrayMatch = [htmlRegex matchesInString:htmlString options:0 range:NSMakeRange(0, [htmlString length])];
+//    if ([arrayMatch count] > 0) {
+//        for (NSTextCheckingResult* checkResult in arrayMatch) {
+//            NSString * tempString = [htmlString substringWithRange:checkResult.range];
+//            NSRange checkRange = [tempString rangeOfString:@"width"];
+//            if (checkRange.location != NSNotFound) {
+//                //do nothing
+//            } else {
+//                NSString* replaceString = [NSString stringWithFormat:@"%@ style=\"width: %dpx; height: %dpx;\" />", [tempString substringToIndex:[tempString length] - 3], width, width];
+//                result = [htmlString stringByReplacingCharactersInRange:checkResult.range withString:replaceString];
+//            }
+//        }
+//        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"(.*\"width:).*?(; height:).*?(;\".*)"
+//                                                                               options:NSRegularExpressionCaseInsensitive
+//                                                                                 error:&error];
+//        
+//        result = [regex stringByReplacingMatchesInString:result
+//                                                 options:0
+//                                                   range:NSMakeRange(0, [result length])
+//                                            withTemplate:[NSString stringWithFormat:@"$1 %dpx$2 %dpx$3", width, width]];
+//        //check width only
+//        NSRegularExpression *widthRegex = [NSRegularExpression regularExpressionWithPattern:@"(.*width=\").*?(\".*)"
+//                                                                                    options:NSRegularExpressionCaseInsensitive
+//                                                                                      error:&error];
+//        
+//        result = [widthRegex stringByReplacingMatchesInString:result
+//                                                      options:0
+//                                                        range:NSMakeRange(0, [result length])
+//                                                 withTemplate:[NSString stringWithFormat:@"$1%dpx$2", width]];
+//        
+//        //check height only
+//        NSRegularExpression *heightRegex = [NSRegularExpression regularExpressionWithPattern:@"(.*height=\").*?(\".*)"
+//                                                                                     options:NSRegularExpressionCaseInsensitive
+//                                                                                       error:&error];
+//        
+//        result = [heightRegex stringByReplacingMatchesInString:result
+//                                                       options:0
+//                                                         range:NSMakeRange(0, [result length])
+//                                                  withTemplate:[NSString stringWithFormat:@"$1%dpx$2", width]];
+//    }
+//    
+//    return result;
+}
+
+/**
+ @desciption: parse URL link from dictionary
+ @author: thanhnn
+ @date: 06/12/2013
+ */
++ (NSDictionary*)parseURLParams:(NSString *)query {
+    NSArray *pairs = [query componentsSeparatedByString:@"&"];
+    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+    for (NSString *pair in pairs) {
+        NSArray *kv = [pair componentsSeparatedByString:@"="];
+        NSString *val =
+        [kv[1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        params[kv[0]] = val;
+    }
+    return params;
+}
+
+/**
+ @desciption: format URL (UTF-8)
+ @author: thanhnn
+ @date: 06/12/2013
+ */
++ (NSString*) formatURL:(NSString*) strURL{
+    return [strURL  stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+}
+
+/**
+ @desciption: get color from color code
+ @author: thanhnn
+ @date: 06/12/2013
+ */
++(UIColor*)getColorFromCode:(NSString*)strCode{
+    NSUInteger red, green, blue;
+    sscanf([strCode UTF8String], "#%02X%02X%02X", &red, &green, &blue);
+    UIColor *color = [UIColor colorWithRed:red/255.0 green:green/255.0 blue:blue/255.0 alpha:1];
+    return color;
+}
+
++(BOOL)string:(NSString*)str containsString:(NSString *)substring
+        range:(NSRange *)range{
+    
+    NSRange r = [str rangeOfString : substring options:NSCaseInsensitiveSearch];
+    BOOL found = ( r.location != NSNotFound );
+    if (range != NULL) *range = r;
+    return found;
+}
+
++ (NSString*) formatStringForUSDate:(NSString*) strDate{
+    NSArray* components = [strDate componentsSeparatedByString: @"/"];
+    NSString *date=[components objectAtIndex:0];
+    NSString *month=[DateUtils getMonthFromInterger:[[components objectAtIndex:1] intValue]];
+    date=[NSString stringWithFormat:@"%@, %@",month,date];
+    date=[NSString stringWithFormat:@"%@, %@",date,[components objectAtIndex:2]];
+    return date;
+}
+
++ (UIImage *)imageWithColor:(UIColor *)color andSize:(CGSize)size
+{
+    UIImage *img = nil;
+    
+    CGRect rect = CGRectMake(0, 0, size.width, size.height);
+    UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context,
+                                   color.CGColor);
+    CGContextFillRect(context, rect);
+    
+    img = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return img;
+}
+
++ (void) setCornerRadius:(UIView*)view rectCorner:(UIRectCorner)rectCorner{
+    UIBezierPath *maskPath;
+    maskPath = [UIBezierPath bezierPathWithRoundedRect:view.bounds byRoundingCorners:rectCorner cornerRadii:CGSizeMake(6.0, 6.0)];
+    
+    CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+    maskLayer.frame = view.bounds;
+    maskLayer.path = maskPath.CGPath;
+    view.layer.mask = maskLayer;
+}
+
++ (NSDate *)dateWithYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day {
+    NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    NSDateComponents *components = [[NSDateComponents alloc] init];
+    [components setYear:year];
+    [components setMonth:month];
+    [components setDay:day];
+    return [calendar dateFromComponents:components];
+}
+
+/**
+ * Checks if is viettel phone number.
+ *
+ * @param phoneNumber
+ *            the phone number
+ * @return true, if is viettel phone number
+ */
++(BOOL)isViettelPhoneNumber:(NSString*) phoneNumber {
+	if (phoneNumber == nil || [phoneNumber length] == 0){
+		return NO;
+	}
+	if([Utils canBePhoneNumber:phoneNumber]) {
+		phoneNumber = [Utils getMobileNumber84Default:phoneNumber];
+        NSString *phoneRegex = @"^84(98|97|96|163|164|165|166|167|168|169)[0-9]+$";
+        NSPredicate *phoneTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", phoneRegex];
+        return [phoneTest evaluateWithObject:phoneNumber];
+	}
+    return NO;
+}
+
++(NSString*) getMobileNumber84Default:(NSString*) mobileNumber {
+	if (mobileNumber == nil || [mobileNumber length] == 0) {
+		return @"";
+	}
+	mobileNumber = [mobileNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    
+    if (mobileNumber && [mobileNumber length] > 0 && [Utils canBePhoneNumber: mobileNumber]) {
+        mobileNumber = [Utils getMobileNumberDefault: mobileNumber];
+        mobileNumber = [NSString stringWithFormat:@"84%@",[mobileNumber substringFromIndex: 1]];
+    }
+    return mobileNumber;
+}
+
++(NSString*) getMobileNumberDefault:(NSString*) mobileNumber {
+	if (mobileNumber == nil || [mobileNumber length] == 0) {
+		return @"";
+	}
+	mobileNumber = [mobileNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString* prefix849 = @"849";
+    NSString* prefix849plus = @"+849";
+    NSString* prefix841 = @"841";
+    NSString* prefix841plus = @"+841";
+    //    NSString* prefix09 = @"09";
+    //    NSString* prefix01 = @"01";
+    //    BOOL result = NO;
+    
+    if (mobileNumber && [mobileNumber length] > 0 && [Utils canBePhoneNumber: mobileNumber]) {
+        int length = [mobileNumber length];
+        switch (length) {
+            case 10:
+                break;
+			case 11:
+                if ([mobileNumber rangeOfString: prefix849].location == 0) {
+                    mobileNumber = [NSString stringWithFormat:@"0%@",[mobileNumber substringFromIndex: [prefix849 length] - 1]];
+                }
+                break;
+			case 12:
+				if ([mobileNumber rangeOfString: prefix841].location == 0) {
+					mobileNumber = [NSString stringWithFormat:@"0%@",[mobileNumber substringFromIndex: [prefix841 length] - 1]];
+                }
+				if ([mobileNumber rangeOfString: prefix849plus].location == 0) {
+					mobileNumber = [NSString stringWithFormat:@"0%@",[mobileNumber substringFromIndex: [prefix849plus length] - 1]];
+                }
+                break;
+			case 13:
+				if ([mobileNumber rangeOfString: prefix841plus].location == 0) {
+					mobileNumber = [NSString stringWithFormat:@"0%@",[mobileNumber substringFromIndex: [prefix841plus length] - 1]];
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    return mobileNumber;
+}
+
++ (BOOL) canBePhoneNumber: (NSString*) mobileNumber {
+    if (mobileNumber && [mobileNumber length] == 0){
+        return NO;
+    }
+    NSString *phoneRegex = @"^[09|01|849|841|+849|+841][0-9]+$";
+    NSPredicate *phoneTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", phoneRegex];
+    return [phoneTest evaluateWithObject:mobileNumber];
+}
+
++(NSString*) getTime{
+    NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    NSDateComponents *components = [gregorian components:NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit | NSHourCalendarUnit | NSMinuteCalendarUnit fromDate:[NSDate date]];
+    NSInteger year1 = [components year];
+    NSInteger month1 = [components month];
+    NSInteger day1 = [components day];
+    NSInteger hour1 = [components hour];
+    NSInteger min1 = [components minute];
+    
+    NSString *strDay =[NSString stringWithFormat:@"%d",day1];
+    if(day1<10)
+        strDay=[NSString stringWithFormat:@"0%d",day1];
+    NSString *strMonth=[NSString stringWithFormat:@"%d",month1];
+    if(month1<10)
+        strMonth=[NSString stringWithFormat:@"0%d",month1];
+    NSString *strHour=[NSString stringWithFormat:@"%d",hour1];
+    if(hour1<10)
+        strHour=[NSString stringWithFormat:@"0%d",hour1];
+    NSString *strMinute=[NSString stringWithFormat:@"%d",min1];
+    if(min1<10)
+        strMinute=[NSString stringWithFormat:@"0%d",min1];
+    
+    return [NSString stringWithFormat:@"%@/%@/%d %@:%@",strDay,strMonth,year1,strHour,strMinute];
+}
+
++(NSString*)reverseString:(NSString *)str
+{
+    NSMutableString* reversed = [NSMutableString stringWithCapacity:str.length];
+    for (int i = (int)str.length-1; i >= 0; i--){
+        [reversed appendFormat:@"%c", [str characterAtIndex:i]];
+    }
+    return reversed;
+}
+
++ (CGSize)sizeForLabel:(UILabel *)label {
+    CGSize constrain = CGSizeMake(label.bounds.size.width, FLT_MAX);
+    CGSize size = [label.text sizeWithFont:label.font constrainedToSize:constrain lineBreakMode:UILineBreakModeWordWrap];
+    
+    return size;
+}
+
++ (NSString *)checkIphoneDevice{
+    NSString *strDevice = @"";
+    BOOL hasRetina = NO;
+    if ([UIScreen instancesRespondToSelector:@selector(scale)])
+    {
+        CGFloat scale = [[UIScreen mainScreen] scale];
+        if (scale > 1.0)
+        {
+            hasRetina = YES;
+        }
+    }
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+    {
+        if (hasRetina)
+        {
+            strDevice = @"iPadRetina";
+        } else {
+            strDevice = @"iPad";
+        }
+    }
+    else {
+        if (hasRetina)
+        {
+            if ([[UIScreen mainScreen] bounds].size.height == 568)
+            {
+                strDevice = @"iPhone5"; //4 inch 64 bit
+            }
+            else {
+                strDevice = @"iPhone4s"; // 4 inch
+            }
+        }
+        else {
+            strDevice = @"iPhone4"; //3.5 inch
+        }
+    }
+    return strDevice;
+}
+
+
+@end

@@ -1,0 +1,44 @@
+//
+//  MusicOffline-Prefix.pch
+//  MusicOffline
+//
+//  Created by Truyen Minh Toan on 5/27/15.
+//  Copyright (c) 2015 Truyen Minh Toan. All rights reserved.
+//
+
+
+#import <Availability.h>
+
+#ifndef __IPHONE_5_0
+#warning "This project uses features only available in iOS SDK 5.0 and later."
+#endif
+
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#endif
+
+#ifdef __IPHONE_6_0 // iOS6 and later
+#   define UITextAlignmentCenter    NSTextAlignmentCenter
+#   define UITextAlignmentLeft      NSTextAlignmentLeft
+#   define UITextAlignmentRight     NSTextAlignmentRight
+#   define UILineBreakModeTailTruncation     NSLineBreakByTruncatingTail
+#   define UILineBreakModeMiddleTruncation   NSLineBreakByTruncatingMiddle
+#   define UILineBreakModeCharacterWrap      NSLineBreakByCharWrapping
+#   define UILineBreakModeWordWrap           NSLineBreakByWordWrapping
+#endif
+
+#define MY_BANNER_UNIT_ID @"ca-app-pub-7252041593417182/8251539956"
+#define MY_INTERSTITIAL_UNIT_ID @"ca-app-pub-7252041593417182/9728273151"
+
+#define INMOBI_APP_ID           @"839242827406451fabb0f41560dd13c5"
+#define BANNER_APP_ID           INMOBI_APP_ID
+#define INTERSTITIAL_APP_ID     INMOBI_APP_ID
+
+#define IS_IOS7 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0f)
+#define IS_IOS5 ([[[UIDevice currentDevice] systemVersion] floatValue] < 6.0f)
+
+#define IS_IPAD (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+#define XCODE_5
+#define KKLog(fmt, ...) NSLog(@"");
+#define BDDebugLog(fmt, ...) NSLog((@"%s [Line %d]\n" fmt @"\n\n\n"), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)

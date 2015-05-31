@@ -1,0 +1,31 @@
+//
+//  TimeDelta.m
+//  Tourist.ONE
+//
+//  Created by Thanh on 1/22/14.
+//  Copyright (c) 2014 Thanh. All rights reserved.
+//
+
+#import "TimeDelta.h"
+#import <QuartzCore/QuartzCore.h>
+
+@implementation TimeDelta
+TimeDelta *timeDeta = nil;
+
++ (TimeDelta*) getInstance {
+    if (timeDeta == nil) {
+        timeDeta = [[TimeDelta alloc] init];
+    }
+    return timeDeta;
+}
+
+- (void) startTime {
+    _vStartTime = CACurrentMediaTime();
+    BDDebugLog(@"startTime = %f", _vStartTime);
+}
+- (void) endTime {
+    double vEndTime = CACurrentMediaTime();
+    BDDebugLog(@"deltaTime = %f", (vEndTime - _vStartTime));
+}
+
+@end
